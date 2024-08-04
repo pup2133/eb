@@ -37,7 +37,6 @@ export class Manager {
     this.notifyPlayers(winner);
   }
 
-  gameOver() {}
 }
 
 // min ~ max 번호 랜덤생성
