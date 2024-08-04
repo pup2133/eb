@@ -1,7 +1,12 @@
 <script setup>
 import { ref, reactive } from "vue";
-import { Player } from "@/modules/player"
-import { Manager, randomNumber, calledNumbers, gameState } from "@/modules/manager";
+import { Player } from "@/modules/player";
+import {
+  Manager,
+  randomNumber,
+  calledNumbers,
+  gameState,
+} from "@/modules/manager";
 
 const containerClass = ref("container");
 const itemClass = ref("item");
@@ -54,7 +59,7 @@ const gameStart = () => {
   const m = new Manager();
 
   for (const playersElement of players) {
-    call.registerPlayer(playersElement);
+    m.registerPlayer(playersElement);
   }
 
   addCalledNumbers();

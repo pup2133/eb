@@ -3,9 +3,7 @@ import BingoGame from "@/components/BingoGame.vue";
 </script>
 
 <template>
-  <BingoGame/>
+  <BingoGame />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
