@@ -48,7 +48,6 @@ export const randomNumber = (min, max) => {
 // map에 number값을 삭제하고 number를 반환
 // map에 없으면 중복된 번호이므로 메서드 재실행
 const callNumber = (number) => {
-  console.log(calledNumbers);
   if (calledNumbers.get(number) === undefined) {
     return callNumber(randomNumber(1, 15));
   } else {
