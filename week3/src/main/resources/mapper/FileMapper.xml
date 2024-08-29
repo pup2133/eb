@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.mapper.FileMapper">
+    <select id="findFileById" resultType="com.study.model.vo.FileMetaData">
+        SELECT file_id AS fileId, file_name AS fileName, store_name AS storeName, path AS filePath
+        FROM file
+        WHERE file_id = #{fileId}
+    </select>
+
+    <select id="findFilesByPostId" resultType="com.study.model.vo.FileMetaData">
+        SELECT file_id AS fileId, file_name AS fileName, store_name AS storeName, path AS filePath
+        FROM file
+        WHERE post_id = #{postId}
+    </select>
+
+    <insert id="saveFile">
+        INSERT INTO file(file_name, store_name, path, post_id)
+            VALUE(#{file.fileName},#{file.storeName},#{file.filePath},#{postId})
+    </insert>
+</mapper>
