@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        /* 검색 폼 스타일 */
+        form[name="searchForm"]{
+            display: flex;
+        }
+
+        form:only-child{
+            margin: 0 5px;
+        }
+
+        .message{
+            margin-left: 42%;
+        }
+
+        /* 페이지 네비게이션 스타일 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+            list-style: none;
+        }
+
+        .pagination a {
+            display: block;
+            text-decoration : none;
+        }
+    </style>
+</head>
+<body>
+<h2>자유게시판 - 목록</h2>
+<form th:name="searchForm" th:action="@{/board/free/list}">
+    <input th:type="hidden" th:name="page" th:value="1">
+
+    <input th:if="${search.getStartDate() != null}" th:name="start_date" th:type="date" th:value="${search.getStartDate()}">
+    <input th:if="${search.getStartDate() == null}" th:name="start_date" th:type="date" th:value="2023-08-30">
+
+    <input th:if="${search.getEndDate() != null}" th:name="end_date" th:type="date" th:value="${search.getEndDate()}">
+    <input th:if="${search.getEndDate() == null}" th:name="end_date" th:type="date" th:value="2024-08-30">
+
+    <select th:name="category_id">
+        <option value="" th:selected="${search.getCategoryId() == null}">전체 카테고리</option>
+        <th:block th:each="c : ${category}">
+            <option
+                    th:value="${c.getCategoryId()}"
+                    th:text="${c.getCategoryName()}"
+                    th:selected="${c.getCategoryId != null and search.getCategoryId() != null and c.getCategoryId().toString().equals(search.getCategoryId())}">
+            </option>
+        </th:block>
+    </select>
+    <input th:name="search_word" th:type="text" th:value="${search.getSearchWord() != null ? search.getSearchWord() : ''}">
+    <button>검색</button>
+</form>
+<p>총 <span th:text="${totalPost}"></span>건</p>
+<span class="message" th:text="${message}"></span>
+<table th:if="${message} == null">
+    <tr>
+        <th style="width: 7%">카테고리</th>
+        <th style="width: 60%">제목</th>
+        <th style="width: 7%">작성자</th>
+        <th style="width: 6%">조회수</th>
+        <th style="width: 10%">등록 일시</th>
+        <th style="width: 10%">수정 일시</th>
+    </tr>
+    <tr th:each="post : ${list}">
+        <td style="width: 7%">
+            <span th:text="${post.getCategoryName()}"></span>
+            <span th:if="${post.getFileCount() > 0}">
+                <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" width="12" height="12"><path d="M7.835,16.17c-.23-.23-.446-.482-.641-.748-.325-.446-.227-1.072,.22-1.397,.446-.325,1.071-.227,1.397,.219,.129,.178,.274,.349,.437,.511,.803,.803,1.87,1.245,3.005,1.245s2.203-.442,3.005-1.245l5.5-5.5c1.657-1.657,1.657-4.354,0-6.011s-4.354-1.657-6.011,0l-1.058,1.058c-.391,.391-1.023,.391-1.414,0s-.391-1.023,0-1.414l1.058-1.058c2.437-2.438,6.402-2.438,8.839,0,2.437,2.437,2.437,6.402,0,8.839l-5.5,5.5c-1.18,1.181-2.75,1.831-4.419,1.831s-3.239-.65-4.418-1.83Zm-1.582,7.83c1.67,0,3.239-.65,4.419-1.831l1.058-1.058c.391-.39,.391-1.023,0-1.414-.39-.391-1.023-.39-1.414,0l-1.059,1.058c-.803,.803-1.87,1.245-3.005,1.245s-2.202-.442-3.005-1.245-1.245-1.87-1.245-3.005,.442-2.203,1.245-3.005l5.5-5.5c.803-.803,1.87-1.245,3.005-1.245s2.203,.442,3.005,1.245c.16,.161,.306,.332,.436,.51,.324,.447,.949,.547,1.397,.221,.447-.325,.546-.95,.221-1.397-.19-.262-.405-.513-.639-.747-1.181-1.182-2.751-1.832-4.42-1.832s-3.239,.65-4.419,1.831L1.834,13.331C.653,14.511,.003,16.081,.003,17.75c0,1.669,.65,3.239,1.831,4.419,1.18,1.181,2.749,1.831,4.419,1.831Z"/></svg>
+            </span>
+        </td>
+        <td style="width: 60%">
+            <a href="javascript:void(0)" onclick="goToView(this)">
+                <input type="hidden" th:value="${post.getPostId()}">
+                <span th:text="${post.getPostTitle()}"></span>
+            </a>
+        </td>
+        <td style="width: 7%">
+            <span th:text="${post.getPostWriter()}"></span>
+        </td>
+        <td style="width: 6%">
+            <span th:text="${post.getPostViews()}"></span>
+        </td>
+        <td style="width: 10%">
+            <span th:text="${post.getPostCreatedDate()}"></span>
+        </td>
+        <td style="width: 10%">
+            <span th:text="${post.getPostRevisionDate()}"></span>
+        </td>
+    </tr>
+    <tr>
+        <input th:name="currentPage" th:type="hidden" th:value="${pages.getCurrentPage()}">
+        <td colspan="6">
+            <ul class="pagination">
+                <li class="${startPage <= 1 ? 'disabled' : ''}">
+                    <a th:href="${pages.getStartPage() > 1 ? 'list?page='+pages.getPrevRange() : '#'}">&laquo;</a>
+                </li>
+
+                <li th:each="p : ${#numbers.sequence(pages.getStartPage(), pages.getEndPage())}" th:classappend="${p == pages.getCurrentPage() ? 'active' : ''}">
+                    <a href="javascript:void(0)" onclick="goToPage(this)" th:text="${p}"></a>
+                </li>
+
+                <li class="${endPage >= totalPages ? 'disabled' : ''}">
+                    <a th:href="${pages.getEndPage() < pages.getTotalPages() ? 'list?page='+pages.getNextRange() : '#'}">&raquo;</a>
+                </li>
+            </ul>
+        </td>
+    </tr>
+</table>
+<button type="button" onclick="goToWrite()">등록</button>
+<script>
+    const initializePage = () =>{
+        const page = document.getElementsByName("page")[0];
+        const currentPage = document.getElementsByName("currentPage")[0].value;
+        page.value = currentPage;
+    }
+
+    const goToWrite = () =>{
+        initializePage();
+        window.location.href = url("write");
+    }
+    const goToView = (a) =>{
+        const postId = a.querySelector('input[type="hidden"]').value;
+        initializePage();
+        window.location.href = url("view")+"&post_id="+postId;
+    }
+
+    const goToPage = (p) =>{
+        const page = document.getElementsByName("page")[0];
+        page.value = p.text;
+        window.location.href = url("list");
+    }
+
+</script>
+<script th:src="@{/js/urlAndFormUtils.js}"></script>
+</body>
+</html>

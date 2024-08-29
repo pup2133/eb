@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+<body>
+<h2>자유게시판 - 등록</h2>
+<form>
+    <table style="border: 1px">
+        <tr>
+            <th>카테고리</th>
+            <td>
+                <select name="categoryId">
+                    <option value="">카테고리 선택</option>
+                    <option th:each="c : ${category}" th:value="${c.categoryId}">
+                        <span th:text="${c.categoryName}"></span>
+                    </option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>작성자</th>
+            <td><input name="postWriter" type="text"></td>
+        </tr>
+        <tr>
+            <th>비밀번호*</th>
+            <td>
+                <input name="postPassword" type="password" placeholder="비밀번호">
+                <input name="confirmPassword" type="password" placeholder="비밀번호 확인">
+            </td>
+        </tr>
+        <tr>
+            <th>제목*</th>
+            <td><input name="postTitle" type="text"></td>
+        </tr>
+        <tr>
+            <th>내용*</th>
+            <td><textarea name="postContent"></textarea></td>
+        </tr>
+        <tr>
+            <th>파일첨부*</th>
+            <td class="f">
+                <input name="file" type="file">
+                <input name="file" type="file">
+                <input name="file" type="file">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button type="button" onclick="moveToList()">취소</button>
+                <button type="button" onclick="savePost()">저장</button>
+            </td>
+        </tr>
+    </table>
+</form>
+<input name="start_date" th:type="hidden" th:value="${search.getStartDate()}">
+<input name="end_date" th:type="hidden" th:value="${search.getEndDate()}">
+<input name="category_id" th:type="hidden" th:value="${search.getCategoryId()}">
+<input name="search_word" th:type="hidden" th:value="${search.getSearchWord()}">
+<input name="page" th:type="hidden" th:value="${search.getPage()}">
+<script>
+    const savePost = () => {
+        if (writeValid()) {
+            const form = document.querySelector('form');
+            const formData = new FormData(form);
+
+            fetch("/board/free/write", {
+                method: "POST",
+                body: formData
+            }).then((response) => {
+                if (response.status === 200) {
+                    alert("게시글이 등록되었습니다.");
+                    window.location.href = url("list");
+                } else {
+                    return response.text();
+                }
+            }).then((text)=>{
+                if(text.includes("게시글")){
+                    alert(text);
+                }else if(text.includes("파일")){
+                    alert(text);
+                    window.location.href = url("list");
+                }
+            });
+        }
+    }
+
+    const moveToList = () => {
+        window.location.href = url("list");
+    }
+</script>
+<script src="/js/urlAndFormUtils.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.mapper.ModifyMapper">
+    <select id="getPassword" resultType="String">
+        SELECT password from post where post_id = #{postId}
+    </select>
+
+    <select id="modifyPostView" resultType="com.study.dto.Post">
+        SELECT p.post_id AS postId, p.writer AS postWriter, p.title AS postTitle, p.content AS postContent, p.views AS postViews,
+               DATE_FORMAT(p.created_date, '%Y-%m-%d %H:%i') AS postCreatedDate,
+               IFNULL(DATE_FORMAT(p.revision_date, '%Y-%m-%d %H:%i'), '-') AS postRevisionDate,
+               c.category AS categoryName, c.category_id AS categoryId
+        FROM post p
+            JOIN category c
+                ON p.category_id = c.category_id
+        WHERE p.post_id = #{postId}
+    </select>
+
+    <delete id="removeFile">
+        DELETE
+        FROM file
+        WHERE file_id = #{fileId}
+    </delete>
+
+    <update id="modifyPost">
+        UPDATE post
+        SET category_id = #{categoryId}, revision_date = CURRENT_TIMESTAMP,
+            writer = #{postWriter}, title = #{postTitle}, content = #{postContent}
+        WHERE post_id = #{postId}
+    </update>
+</mapper>

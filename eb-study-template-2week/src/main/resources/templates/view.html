@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .comments{
+            display: flex;
+            flex-direction: column;
+        }
+        .comments td {
+            padding: 4px;
+        }
+        .files {
+            display: flex;
+            flex-direction: column;
+        }
+        .files td {
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+        }
+        /* 모달 배경 스타일 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        /* 모달 내용 스타일 */
+        .modal > div {
+            background-color: #fff;
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .password{
+            display: flex;
+        }
+        .content{
+            height: 150px;
+        }
+        .buttons{
+            display: flex;
+        }
+        .buttons button{
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+<h2>자유게시판 - 보기</h2>
+<table style="border: 1px">
+    <tr>
+        <td><span th:text="${post.getPostWriter()}"></span></td>
+        <td>등록일시 <span th:text="${post.getPostCreatedDate()}"></span> </td>
+        <td>수정일시 <span th:text="${post.getPostRevisionDate()}"></span> </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            [<span th:text="${post.getCategoryName()}"></span>]
+            <span th:text="${post.getPostTitle()}"></span>
+        </td>
+        <td>조회수: <span th:text="${post.getPostViews()}"></span> </td>
+    </tr>
+    <tr>
+        <td class="content" colspan="3">
+            <span th:text="${post.getPostContent()}"></span>
+        </td>
+    </tr>
+    <tr class="files">
+        <td th:each="f : ${file}">
+            <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24" width="12" height="12"><path d="M9.878,18.122a3,3,0,0,0,4.244,0l3.211-3.211A1,1,0,0,0,15.919,13.5l-2.926,2.927L13,1a1,1,0,0,0-1-1h0a1,1,0,0,0-1,1l-.009,15.408L8.081,13.5a1,1,0,0,0-1.414,1.415Z"/><path d="M23,16h0a1,1,0,0,0-1,1v4a1,1,0,0,1-1,1H3a1,1,0,0,1-1-1V17a1,1,0,0,0-1-1H1a1,1,0,0,0-1,1v4a3,3,0,0,0,3,3H21a3,3,0,0,0,3-3V17A1,1,0,0,0,23,16Z"/></svg>
+            <a th:href="@{/board/free/view/download(file=${f.getFileId()})}"><span th:text="${f.getFileName()}"></span></a>
+        </td>
+    </tr>
+    <tr class="comments">
+        <td th:each="co : ${comment}" class="comment">
+            <span th:text="${co.getCommentWriter()}"></span>
+            <span th:text="${co.getCommentContent()}"></span>
+            <span th:text="${co.getCommentCreatedDate()}"></span>
+        </td>
+    </tr>
+    <tr>
+        <input name="postId" id="postId" th:type="hidden" th:value="${post.getPostId()}">
+        <td>
+            <input name="write" type="text">
+        </td>
+        <td>
+            <input name="comment" type="text">
+        </td>
+        <td>
+            <button type="button" onclick="addComment()">등록</button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button type="button" onclick="goToList()">목록</button>
+        </td>
+        <td>
+            <button type="button" onclick="modifyPost()">수정</button>
+        </td>
+        <td>
+            <button type="button" onclick="deletePost()">삭제</button>
+        </td>
+    </tr>
+</table>
+<div class="modal">
+    <div>
+        <div class="password">
+            <input id="password" type="password" placeholder="비밀번호를 입력해 주세요.">
+        </div>
+        <div class="buttons">
+            <button onclick="cancel()">취소</button>
+            <button onclick="check()">확인</button>
+        </div>
+    </div>
+</div>
+<input name="start_date" th:type="hidden" th:value="${search.getStartDate()}">
+<input name="end_date" th:type="hidden" th:value="${search.getEndDate()}">
+<input name="category_id" th:type="hidden" th:value="${search.getCategoryId()}">
+<input name="search_word" th:type="hidden" th:value="${search.getSearchWord()}">
+<input name="page" th:type="hidden" th:value="${search.getPage()}">
+<script>
+    const modifyPost = () =>{
+        const postId = document.getElementById('postId').value;
+        const href = url("modify");
+        window.location.href = href+"&post_id="+postId;
+    }
+
+    const goToList = () => {
+        const href = url("list");
+        window.location.href = href;
+    }
+
+    const deletePost = () =>{
+        let modal = document.querySelector('.modal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    const cancel = () => {
+        let password = document.getElementById("password");
+        let modal = document.querySelector('.modal');
+        if (modal) {
+            modal.style.display = 'none';
+            password.value = "";
+            password.innerText ="";
+        }
+    }
+
+    const check = () => {
+        const password = document.getElementById("password").value;
+        const postId = document.getElementById("postId").value;
+
+        const urlEncodedData = new URLSearchParams({
+            "postId": postId,
+            "password": password
+        }).toString();
+
+        fetch("/board/free/view/remove-post",{
+            method : "DELETE",
+            headers : {
+                "Content-Type" : "application/x-www-form-urlencoded"
+            },
+            body : urlEncodedData
+        }).then((response) => {
+            if(response.status===200){
+                alert("게시글이 삭제 되었습니다.");
+                window.location.href = url("list");
+                return Promise.reject();
+
+            }else {
+                return response.text();
+            }
+        }).then((text)=>{
+            alert(text);
+        });
+    }
+
+    const addComment = () =>{
+        const postId = document.getElementById("postId").value;
+        const comment = document.getElementsByName('comment')[0];
+        const write = document.getElementsByName('write')[0];
+
+        fetch("/board/free/view/save-comment",{
+            method : "POST",
+            headers : {
+                "Content-Type" : "application/json"
+            },
+            body : JSON.stringify({
+                "postId": postId,
+                "commentContent": comment.value,
+                "commentWriter": write.value
+            })
+        }).then((response) => {
+            if(response.status===200){
+                return response.json();
+            }else {
+                alert("댓글 등록 실패");
+            }
+        }).then((data) =>{
+            const commentsClass = document.querySelector('.comments');
+            const commentClass = document.createElement('td');
+
+            commentClass.textContent = data.commentWriter + "  " + data.commentContent + " " + data.commentCreatedDate;
+            commentsClass.appendChild(commentClass);
+
+            comment.value = "";
+            write.value = "";
+        });
+    }
+</script>
+<script th:src="@{/js/urlAndFormUtils.js}"></script>
+</body>
+</html>

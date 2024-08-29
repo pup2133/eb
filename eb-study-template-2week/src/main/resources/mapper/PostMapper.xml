@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.mapper.PostMapper">
+    <insert id="savePost" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO post(writer, password, title, content, created_date, category_id)
+            value(#{postWriter},#{postPassword},#{postTitle},#{postContent},CURRENT_TIMESTAMP,#{categoryId})
+    </insert>
+
+    <select id="getPostById" resultType="com.study.dto.Post">
+        SELECT p.post_id AS postId, p.writer AS postWriter, p.title AS postTitle, p.content AS postContent, p.views AS postViews,
+               DATE_FORMAT(p.created_date, '%Y-%m-%d %H:%i') AS postCreatedDate,
+               IFNULL(DATE_FORMAT(p.revision_date, '%Y-%m-%d %H:%i'), '-') AS postRevisionDate,
+               c.category AS categoryName
+		FROM post p
+		    JOIN category c
+		        ON p.category_id = c.category_id
+		WHERE p.post_id = #{postId}
+    </select>
+
+    <select id="getPostList" parameterType="com.study.dto.Search" resultType="com.study.dto.Post">
+        SELECT p.post_id AS postId, p.writer AS postWriter, p.title AS postTitle, p.views AS postViews,
+               DATE_FORMAT(p.created_date, '%Y-%m-%d %H:%i') AS postCreatedDate,
+               IFNULL(DATE_FORMAT(p.revision_date, '%Y-%m-%d %H:%i'), '-') AS postRevisionDate,
+               c.category AS categoryName, COUNT(f.file_id) AS fileCount
+		FROM post p
+		    JOIN category c
+		        ON p.category_id = c.category_id
+		    LEFT JOIN file f
+		        ON p.post_id = f.post_id
+		<where>
+            <if test="search.startDate != null and search.endDate != null">
+                p.created_date BETWEEN #{search.startDate} AND #{search.endDate}
+            </if>
+            <if test="search.categoryId != null and search.categoryId != ''">
+                AND p.category_id = #{search.categoryId}
+            </if>
+		    <if test="search.searchWord != null">
+                AND (p.writer LIKE CONCAT('%', #{search.searchWord}, '%')
+                OR p.title LIKE CONCAT('%', #{search.searchWord}, '%')
+                OR p.content LIKE CONCAT('%', #{search.searchWord}, '%'))
+            </if>
+        </where>
+		GROUP BY p.post_id, p.writer, p.title, p.views, p.created_date, p.revision_date, c.category
+		ORDER BY p.post_id DESC
+		LIMIT 10 OFFSET #{offset}
+    </select>
+
+    <select id="getPostAllCount" parameterType="com.study.dto.Search" resultType="int">
+        SELECT COUNT(*)
+		FROM post p
+        <where>
+            <if test="startDate != null and endDate != null">
+                p.created_date BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                AND p.category_id = #{categoryId}
+            </if>
+            <if test="searchWord != null">
+                AND (p.writer LIKE CONCAT('%', #{searchWord}, '%')
+                OR p.title LIKE CONCAT('%', #{searchWord}, '%')
+                OR p.content LIKE CONCAT('%', #{searchWord}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <update id="modifyViews">
+        UPDATE post
+        SET views = views + 1
+        WHERE post_id = #{postId}
+    </update>
+
+    <delete id="removePost">
+        DELETE
+        FROM post
+        WHERE post_id = #{postId}
+          and password = #{password}
+    </delete>
+</mapper>

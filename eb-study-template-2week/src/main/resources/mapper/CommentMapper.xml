@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.mapper.CommentMapper">
+    <select id="getComment" resultType="com.study.dto.Comment">
+        SELECT comment_id AS commentId, writer AS commentWriter, content AS commentContent,
+               DATE_FORMAT(created_date, '%Y-%m-%d %H:%i') AS commentCreatedDate
+        FROM comment
+        WHERE comment_id = #{commentId}
+    </select>
+
+    <select id="getCommentByPostId" resultType="com.study.dto.Comment">
+        SELECT comment_id AS commentId, writer AS commentWriter, content AS commentContent,
+               DATE_FORMAT(created_date, '%Y-%m-%d %H:%i') AS commentCreatedDate
+        FROM comment
+        WHERE post_id = #{postId}
+    </select>
+
+    <insert id="saveComment" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO comment(writer, content, created_date, post_id)
+            value(#{commentWriter},#{commentContent},CURRENT_TIMESTAMP,#{postId})
+    </insert>
+</mapper>
