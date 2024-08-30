@@ -9,6 +9,11 @@ const isPasswordValid = (password, confirmPassword) => {
     return /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{4,15}$/.test(password) && password === confirmPassword;
 }
 
+/**
+ * 1. 사용자가 입력한 카테고리, 작성자, 제목, 내용 검증
+ * @param post
+ * @returns {boolean}
+ */
 const validate = (post) => {
     if (!isCategoryValid(post.categoryId)) {
         alert("카테고리를 입력해 주세요.");
@@ -33,6 +38,13 @@ const validate = (post) => {
     return true;
 }
 
+/**
+ * 1. 수정할 때 쓰이는 검증 메서드
+ * 2. 사용자가 입력한 폼 검증
+ * 3. 비밀번호 검증 성공시 나머지 검증
+ * @param post
+ * @returns {boolean}
+ */
 export const modifyValid = (post) => {
     if (!isPasswordValid(post.postPassword)) {
         alert("비밀번호는 4자 이상 16자 미만이며, 문자, 숫자, 특수문자를 포함해야 합니다.");
@@ -42,6 +54,13 @@ export const modifyValid = (post) => {
     return validate(post);
 }
 
+/**
+ * 1. 작성할 때 쓰이는 검증 메서드
+ * 2. 사용자가 입력한 폼 검증
+ * 3. 비밀번호 검증 성공시 나머지 검증
+ * @param post
+ * @returns {boolean}
+ */
 export const writeValid = (post) => {
     if (!isPasswordValid(post.postPassword, post.confirmPassword)) {
         alert("비밀번호는 4자 이상 16자 미만이며, 문자, 숫자, 특수문자를 포함해야 합니다.");

@@ -76,11 +76,27 @@ import {useRoute, useRouter} from 'vue-router';
 import {computed, onMounted, ref} from 'vue';
 import boardService from "@/service/boardService";
 
+
 const router = useRouter();
 const route = useRoute();
 
+/**
+ * 1. posts: 게시글 정보
+ * 2. categories: 전체 카테고리
+ * 3. totalPostCount: 검색 조건에 해당하는 전체 게시글 수
+ */
 const postDetails = ref({})
+
+/* 1. startPage: 시작 페이지
+ * 2. endPage: 끝 페이지
+ * 3. totalPages: 총 페이지 수
+ * 4. currentPage: 현재 페이지
+ * 5. prevRange: 이전 페이지
+ * 6. nextRange: 다음 페이지
+ * */
 const pageInfo = ref({});
+
+/* 검색 조건 */
 const search = ref({
   startDate: route.query.startDate || '2023-08-31',
   endDate: route.query.endDate || '2024-08-31',
@@ -89,16 +105,31 @@ const search = ref({
   page: route.query.page || 1,
 });
 
+/* 컴포넌트 마운트 된 후 실행 */
 onMounted(() => {
-  getPostList();
+  getPostList(false, undefined);
 });
 
+/*
+ * 1. startPage와 endPage를 기준으로 전체 페이지 수를 계산
+ * 2. Array.from을 사용하여 길이가 endPage - startPage + 1인 배열을 생성합니다.
+*/
 const pageNumbers = computed(() => {
   return Array.from(
       {length: pageInfo.value.endPage - pageInfo.value.startPage + 1},
       (_, i) => i + pageInfo.value.startPage);
 });
 
+/**
+ * 1. 검색 유무와 페에지를 받아옴
+ * 2. 검색일 경우 searchState === true, 페이징일 경우 searchState === false
+ * 3. boardsService.getPostList() 호출하여 받아온 데이터로
+ * 4. postDetails, pageInfo 상태 변경
+ * 5. router.replace 사용해 url에 쿼리 파라미터 붙여줌
+ * @param searchStatus
+ * @param page
+ * @returns {Promise<void>}
+ */
 const getPostList = async (searchStatus, page) => {
   try {
     const response = await boardService.getPostList(page, search);
@@ -108,18 +139,31 @@ const getPostList = async (searchStatus, page) => {
   }
 }
 
+/**
+ * 1. 서버에서 받아온 데이터로 상태를 설정함
+ * @param data
+ * @constructor
+ */
 const ListDataSetup = (data) => {
   postDataSetUp(data);
   pageDataSetUp(data);
   search.value.page = pageInfo.value.currentPage;
 }
 
+/**
+ * 1. 서버에서 받아온 데이터로 postDetails의 상태를 설정함
+ * @param data
+ */
 const postDataSetUp = (data) => {
   postDetails.value.posts = data.posts;
   postDetails.value.totalPostCount = data.totalPostCount;
   postDetails.value.categories = data.categories;
 }
 
+/**
+ * 1. 서버에서 받아온 데이터로 pageInfo의 상태를 설정함
+ * @param data
+ */
 const pageDataSetUp = (data) => {
   pageInfo.value.startPage = data.page.startPage;
   pageInfo.value.endPage = data.page.endPage;
@@ -129,10 +173,15 @@ const pageDataSetUp = (data) => {
   pageInfo.value.nextRange = data.page.nextRange;
 }
 
+/**
+ * 1. router, route, postId를 넘겨서 게시글 페이지로 이동
+ * @param postId
+ */
 const goToPost = (postId) => {
   boardService.goToPost(router, route, postId);
 };
 
+/* router, route 넘겨서 등록 페이지로 이동 */
 const goToWrite = () => {
   boardService.goToWrite(router, route);
 };

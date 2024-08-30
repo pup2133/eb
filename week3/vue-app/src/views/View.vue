@@ -60,7 +60,20 @@ import boardService from "@/service/boardService";
 const router = useRouter();
 const route = useRoute();
 
+/* <dialog> */
 const dialog = ref();
+
+/**
+ * 1. commentWriter: 댓글 작성자
+ * 2. commentContent: 댓글 내용
+ * 3. password: 게시글 삭제 시 사용하는 패스워드
+ * 4. comments: 게시글 댓글 목록
+ * 5. files: 게시글 파일 목록
+ * 6. view: 게시글 정보
+ * 7. downloadLink: 파일 다운로드시 사용
+ * 8. state: <table> 렌더링할 때 사용
+ * @type {Ref<UnwrapRef<{password: string, view: {}, comments: *[], downloadLink: string, files: *[], commentWriter: string, commentContent: string, state: boolean}>>}
+ */
 const postState = ref({
   commentWriter: "",
   commentContent: "",
@@ -72,20 +85,31 @@ const postState = ref({
   state: false
 });
 
+/* 컴포넌트 마운트 된 후 실행 */
 onMounted(() => {
   postState.value.view.postId = parseInt(sessionStorage.getItem("postId"));
   getView();
 });
 
+/**
+ * 1. boardService.getView(postId) 호출하여 받아온 데이터로
+ * 2. 가져온 데이터로 상태 변경
+ * 3. 가져온 데이터가 없으면 게시글 목록으로 이동
+ * @returns {Promise<void>}
+ */
 const getView = async () => {
   try {
     const response = await boardService.getView(postState.value.view.postId);
     viewDataSetUp(response.data.object)
   } catch (error) {
-    await router.push({name: "List", query: route.query});
+    await boardService.goToList(router, route);
   }
 };
 
+/**
+ * 1. 서버에서 받아온 데이터로 postState 상태 변경
+ * @param data
+ */
 const viewDataSetUp = (data) => {
   postState.value.state = true;
   postState.value.view = data.view;
@@ -93,28 +117,37 @@ const viewDataSetUp = (data) => {
   postState.value.files = data.files;
 }
 
-const goToModify = () => {
-  boardService.goToModify(router, route, postState.value.view.postId);
-};
-
-const removePost = () => {
-  dialog.value.showModal();
-};
-
-const removeCancel = () => {
-  dialog.value.close();
-};
-
+/**
+ * 1. boardService.removeConfirm(postId, postPassword) 호출하여 게시글 삭제
+ * 2. 게시글 삭제 완료되면 게시글 목록 페이지로 이동
+ * @returns {Promise<void>}
+ */
 const removeConfirm = async () => {
   try {
     await boardService.removeConfirm(postState.value.view.postId, postState.value.password)
-    await router.push({name: "List", query: route.query});
+    await boardService.goToList(router, route);
   } catch (error) {
   }
 }
 
+/* dialog 보기 */
+const removePost = () => {
+  dialog.value.showModal();
+};
+
+/* dialog 닫기 */
+const removeCancel = () => {
+  dialog.value.close();
+};
+
+/* router, route 넘겨서 게시글 목록 페이지로 이동 */
 const goToList = () => {
   boardService.goToList(router, route);
+};
+
+/* router, route, postId 넘겨서 게시글 수정 페이지로 이동 */
+const goToModify = () => {
+  boardService.goToModify(router, route, postState.value.view.postId);
 };
 </script>
 

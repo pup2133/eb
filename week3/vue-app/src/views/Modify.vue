@@ -85,28 +85,48 @@ import boardService from "@/service/boardService";
 const router = useRouter();
 const route = useRoute();
 
+/* <form> */
 const modifyForm = ref();
+
+/**
+ * 1. post: 게시글 정보
+ * 2. categories: 전체 카테고리 목록
+ * 3. fileInput: <input type="file"> 요소의 목록을 조절하기 위해 사용
+ * 4. postFiles: 게시글에 업로드된 파일 목록
+ * @type {Ref<UnwrapRef<{post: {}, downloadLink: string, postFiles: *[], categories: *[], filesInput: *[]}>>}
+ */
 const postState = ref({
-  password: '',
-  categories: [],
   post: {},
+  categories: [],
   filesInput: [],
   postFiles: [],
   downloadLink: "http://localhost:8080/api/view/download?fileId=",
-})
-
-onMounted(() => {
-  postState.value.post.postId = parseInt(sessionStorage.getItem("postId"))
-  getData();
 });
 
+/* 컴포넌트 마운트 된 후 실행 */
+onMounted(() => {
+  postState.value.post.postId = parseInt(sessionStorage.getItem("postId"))
+  getModify();
+});
+
+/**
+ *  1. filesInput의 길이를 계산하기 위해 사용
+ *  2. 업로드 파일이 3개를 넘지 않게 하기 위해 (postFile.Length + filesInput)의 길이가 3이 넘지 않게 설정
+ *  3. 예를 들어  게시글에 업로드 된 파일이 2개라면 fileInput은 1
+ */
 const filesLength = computed(() => {
   const files = postState.value.postFiles
   if (files === undefined) return 3;
   return (3 - files.length);
 });
 
-const getData = async () => {
+/**
+ * 1. onMounted()로 실행됨
+ * 2. boardService.getModify(postId) 호출하여 받아온 데이터로
+ * 3. postState의 상태를 설정함
+ * @returns {Promise<void>}
+ */
+const getModify = async () => {
   try {
     const response = await boardService.getModify(postState.value.post.postId);
     modifyDataSetUp(response.data.object);
@@ -114,6 +134,10 @@ const getData = async () => {
   }
 };
 
+/**
+ * 1. 서버에서 받아온 데이터로 postState의 상태를 설정
+ * @param data
+ */
 const modifyDataSetUp = (data) => {
   postState.value.categories = data.categories;
   postState.value.post = data.post;
@@ -125,6 +149,13 @@ const modifyDataSetUp = (data) => {
   postState.value.filesInput.length = filesLength.value;
 }
 
+/**
+ * 1. 검증 실행
+ * 2. 성공하면 formData 생성 후 폼에 postId와 removeFiles 값 추가
+ * 3. boardService.modifyPost(formData)를 호출해서 게시물 수정
+ * 4. 수정이 완료되면, 게시글 상세 페이지로 이동
+ * @returns {Promise<void>}
+ */
 const modifyPost = async () => {
   try {
     const validation = modifyValid(postState.value.post);
@@ -146,6 +177,11 @@ const modifyPost = async () => {
   }
 }
 
+/**
+ * 1. 파일 삭제 버튼을 누르면
+ * 2. updateFileState(fileId)를 넘겨 상태를 설정함
+ * @param fileId
+ */
 const fileRemove = (fileId) => {
   if (confirm("해당 파일을 삭제하시겠습니까?")) {
     updateFileState(fileId);
@@ -153,12 +189,17 @@ const fileRemove = (fileId) => {
   }
 };
 
+/**
+ * 1. postFiles, removeFiles, filesInput 상태 변경
+ * @param fileId
+ */
 const updateFileState = (fileId) => {
   postState.value.postFiles = postState.value.postFiles.filter(file => file.fileId !== fileId);
   postState.value.post.removeFiles.push(fileId);
   postState.value.filesInput.length += 1;
 }
 
+/* router, route, postId 넘겨서 게시글 상세 페이지로 이동 */
 const goToPost = () => {
   boardService.goToPost(router, route, postState.value.post.postId)
 };

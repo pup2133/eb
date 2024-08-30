@@ -21,8 +21,9 @@
 
 <script setup>
 import {defineProps} from 'vue';
-import {instance} from "@/modules/axios";
+import boardService from "@/service/boardService";
 
+/* props */
 const props = defineProps({
   postState: {
     type: Object,
@@ -30,25 +31,30 @@ const props = defineProps({
   },
 });
 
-// 댓글 저장
+/**
+ * 1. boardService.saveComment(comment)를 호출하여 받아온 데이터로
+ * 2. props.postState 상태 변경
+ * @returns {Promise<void>}
+ */
 const saveComment = async () => {
   try {
-    const post = props.postState;
-
     const comment = {
-      commentWriter: post.commentWriter,
-      commentContent: post.commentContent,
-      postId: post.view.postId
+      commentWriter: props.postState.post.commentWriter,
+      commentContent: props.postState.post.commentContent,
+      postId: props.postState.post.view.postId
     };
 
-    const response = await instance.post("/view/save-comment", comment);
+    const response = await boardService.saveComment(comment);
 
     updateComments(response.data.object);
-
   } catch (error) {
   }
 };
 
+/**
+ * 1. props.postSate 상태 변경
+ * @param comment
+ */
 const updateComments = (comment) => {
   props.postState.comments.push({
     commentWriter: comment.commentWriter,
@@ -59,7 +65,6 @@ const updateComments = (comment) => {
   props.postState.commentWriter = "";
   props.postState.commentContent = "";
 }
-
 </script>
 
 <style scoped>
