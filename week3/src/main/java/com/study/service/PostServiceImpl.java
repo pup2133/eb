@@ -1,5 +1,6 @@
 package com.study.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -32,9 +33,32 @@ public class PostServiceImpl implements PostService{
 		Integer offset = ((search.getPage() - 1) * 10);
 
 		List<Post> postList = postMapper.findPostList(search, offset);
+		List<Post> posts = parserTitle(postList);
+
 		Integer TotalPostCount = postMapper.findTotalPostCount(search);
 
-		return ListResponse.builder().posts(postList).totalPostCount(TotalPostCount).build();
+		return ListResponse.builder().posts(posts).totalPostCount(TotalPostCount).build();
+	}
+
+	/**
+	 * 1. 제목이 80자 넘어가면 40자로 줄임
+	 * @param postList: Db에서 페이징 해서 가져온 postList
+	 * @return List<Post>: 타이틀 수정 후 return
+	 */
+	private List<Post> parserTitle(List<Post> postList) {
+		List<Post> posts = new ArrayList<>();
+
+		for (Post post : postList) {
+			String newTitle = post.getPostTitle();
+			if (newTitle.length() >= 80) {
+				newTitle = newTitle.substring(0, 30);
+				newTitle += "...";
+			}
+			Post newPost = post.copyWith(newTitle);
+			posts.add(newPost);
+		}
+
+		return posts;
 	}
 
 	/**
@@ -76,8 +100,6 @@ public class PostServiceImpl implements PostService{
 		postMapper.savePost(write);
 		fileService.saveFilesByPostId(write.getPostId(), files);
 	}
-
-	/* 조회수 업데이트 */
 
 	/**
 	 * 1. 게시글 ID의 조회수 증가

@@ -42,8 +42,6 @@ public class FileServiceImpl implements FileService{
 		return storeName + extension;
 	}
 
-	/* 스토어에 파일 저장 -> DB에 파일 정보 저장 */
-
 	/**
 	 * 1. files 정보로 store, DB에 파일 저장
 	 * 2. 저장 실패 시 FileException
