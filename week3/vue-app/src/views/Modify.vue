@@ -171,8 +171,7 @@ const modifyPost = async () => {
 
     await boardService.modifyPost(formData);
 
-    await router.push({name: "View", query: route.query});
-
+    await boardService.goToPost(router, route, postState.value.postId);
   } catch (error) {
   }
 }
