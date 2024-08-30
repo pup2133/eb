@@ -41,27 +41,6 @@ public class PostServiceImpl implements PostService{
 	}
 
 	/**
-	 * 1. 제목이 80자 넘어가면 40자로 줄임
-	 * @param postList: Db에서 페이징 해서 가져온 postList
-	 * @return List<Post>: 타이틀 수정 후 return
-	 */
-	private List<Post> parserTitle(List<Post> postList) {
-		List<Post> posts = new ArrayList<>();
-
-		for (Post post : postList) {
-			String newTitle = post.getPostTitle();
-			if (newTitle.length() >= 80) {
-				newTitle = newTitle.substring(0, 30);
-				newTitle += "...";
-			}
-			Post newPost = post.copyWith(newTitle);
-			posts.add(newPost);
-		}
-
-		return posts;
-	}
-
-	/**
 	 * 1. 게시글 ID로 게시글 정보 가져오기
 	 * @param postId: 게시글 ID
 	 * @return View: 게시글 정보
@@ -119,5 +98,27 @@ public class PostServiceImpl implements PostService{
 	public String findPasswordByPostId(Long postId){
 		return postMapper.findPasswordByPostId(postId);
 	}
+
+	/**
+	 * 1. 제목이 80자 넘어가면 40자로 줄임
+	 * @param postList: Db에서 페이징 해서 가져온 postList
+	 * @return List<Post>: 타이틀 수정 후 return
+	 */
+	private List<Post> parserTitle(List<Post> postList) {
+		List<Post> posts = new ArrayList<>();
+
+		for (Post post : postList) {
+			String newTitle = post.getPostTitle();
+			if (newTitle.length() >= 80) {
+				newTitle = newTitle.substring(0, 30);
+				newTitle += "...";
+			}
+			Post newPost = post.copyWith(newTitle);
+			posts.add(newPost);
+		}
+
+		return posts;
+	}
+
 
 }
