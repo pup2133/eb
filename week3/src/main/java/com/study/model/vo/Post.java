@@ -3,13 +3,11 @@ package com.study.model.vo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 /**
  * 게시글을 조회할 때 데이터를 담을 VO
  */
 @Getter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class Post {

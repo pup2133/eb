@@ -20,16 +20,15 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import {defineProps} from 'vue';
 import {instance} from "@/modules/axios";
 
 const props = defineProps({
-  postState:{
+  postState: {
     type: Object,
     required: true
   },
 });
-
 
 // 댓글 저장
 const saveComment = async () => {
@@ -39,25 +38,28 @@ const saveComment = async () => {
     const comment = {
       commentWriter: post.commentWriter,
       commentContent: post.commentContent,
-      postId: post.postId
+      postId: post.view.postId
     };
 
     const response = await instance.post("/view/save-comment", comment);
 
-    if (response.status === 200) {
-      const comment = response.data.object;
-      post.comments.push({
-        commentWriter: comment.commentWriter,
-        commentContent: comment.commentContent,
-        commentCreatedDate: comment.commentCreatedDate
-      });
-      post.commentWriter = "";
-      post.commentContent = "";
-    }
-  }catch (error){
+    updateComments(response.data.object);
 
+  } catch (error) {
   }
 };
+
+const updateComments = (comment) => {
+  props.postState.comments.push({
+    commentWriter: comment.commentWriter,
+    commentContent: comment.commentContent,
+    commentCreatedDate: comment.commentCreatedDate
+  });
+
+  props.postState.commentWriter = "";
+  props.postState.commentContent = "";
+}
+
 </script>
 
 <style scoped>

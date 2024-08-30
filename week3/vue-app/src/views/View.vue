@@ -32,7 +32,7 @@
         <button type="button" @click="goToList">목록</button>
       </td>
       <td>
-        <button type="button" @click="modifyPost(postState.postId)">수정</button>
+        <button type="button" @click="goToModify">수정</button>
       </td>
       <td>
         <button type="button" @click="removePost">삭제</button>
@@ -52,17 +52,16 @@
 </template>
 
 <script setup>
-import {instance} from '@/modules/axios';
 import {useRoute, useRouter} from 'vue-router';
-import {onMounted, reactive, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import comment from '@/components/comment.vue'
+import boardService from "@/service/boardService";
 
 const router = useRouter();
 const route = useRoute();
 
 const dialog = ref();
-const postState = reactive({
-  postId: 0,
+const postState = ref({
   commentWriter: "",
   commentContent: "",
   password: "",
@@ -74,33 +73,28 @@ const postState = reactive({
 });
 
 onMounted(() => {
-  postState.postId = parseInt(sessionStorage.getItem("postId"));
-  getData();
+  postState.value.view.postId = parseInt(sessionStorage.getItem("postId"));
+  getView();
 });
 
-const getData = async () => {
+const getView = async () => {
   try {
-    const params = {params: {postId: postState.postId}};
-
-    const response = await instance.get("/view", params);
-
-    dataSetUp(response.data.object);
+    const response = await boardService.getView(postState.value.view.postId);
+    viewDataSetUp(response.data.object)
   } catch (error) {
     await router.push({name: "List", query: route.query});
   }
 };
 
-const dataSetUp = (data) => {
-  postState.state = true;
-  postState.view = data.view;
-  postState.comments = data.comment;
-  postState.files = data.files;
+const viewDataSetUp = (data) => {
+  postState.value.state = true;
+  postState.value.view = data.view;
+  postState.value.comments = data.comment;
+  postState.value.files = data.files;
 }
 
-const modifyPost = (postId) => {
-  sessionStorage.setItem("postId", postId);
-
-  router.push({name: "Modify", query: route.query});
+const goToModify = () => {
+  boardService.goToModify(router, route, postState.value.view.postId);
 };
 
 const removePost = () => {
@@ -113,20 +107,14 @@ const removeCancel = () => {
 
 const removeConfirm = async () => {
   try {
-    const params = {params: {postId: postState.postId, postPassword: postState.password}};
-
-    const response = await instance.delete("/view/remove-post", params);
-
-    alert(response.data.message);
-
+    await boardService.removeConfirm(postState.value.view.postId, postState.value.password)
     await router.push({name: "List", query: route.query});
   } catch (error) {
-
   }
 }
 
 const goToList = () => {
-  router.push({name: "List", query: route.query});
+  boardService.goToList(router, route);
 };
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <form ref="modifyForm">
-    <table>
+    <table style="border: 1px">
       <tr>
         <td>카테고리*</td>
         <td>
@@ -33,7 +33,7 @@
       <tr>
         <td>비밀번호</td>
         <td>
-          <input name="postPassword" type="password" v-model="postState.password">
+          <input name="postPassword" type="password" v-model="postState.post.postPassword" placeholder="비밀번호를 입력해 주세요">
         </td>
       </tr>
       <tr>
@@ -78,96 +78,88 @@
 
 <script setup>
 import {useRoute, useRouter} from 'vue-router';
-import {ref, reactive, computed, onMounted} from 'vue';
-import {instance} from '@/modules/axios';
+import {ref, computed, onMounted} from 'vue';
 import {modifyValid} from '@/modules/validation';
+import boardService from "@/service/boardService";
 
 const router = useRouter();
 const route = useRoute();
 
 const modifyForm = ref();
-const postState = reactive({
-  postId: 0,
+const postState = ref({
   password: '',
   categories: [],
   post: {},
-  removeFiles: [],
   filesInput: [],
   postFiles: [],
   downloadLink: "http://localhost:8080/api/view/download?fileId=",
 })
 
 onMounted(() => {
-  postState.postId = parseInt(sessionStorage.getItem("postId"))
+  postState.value.post.postId = parseInt(sessionStorage.getItem("postId"))
   getData();
 });
 
 const filesLength = computed(() => {
-  const files = postState.postFiles
+  const files = postState.value.postFiles
   if (files === undefined) return 3;
   return (3 - files.length);
 });
 
 const getData = async () => {
   try {
-    const params = {params: {postId: postState.postId}};
-    const response = await instance.get("/modify", params);
-
-    dataSetUp(response.data.object);
-    postState.filesInput.length = filesLength.value;
+    const response = await boardService.getModify(postState.value.post.postId);
+    modifyDataSetUp(response.data.object);
   } catch (error) {
-
   }
 };
 
-const dataSetUp = (data) =>{
-  postState.categories = data.categories;
-  postState.post = data.post;
-  postState.postFiles = data.files;
+const modifyDataSetUp = (data) => {
+  postState.value.categories = data.categories;
+  postState.value.post = data.post;
+  postState.value.postFiles = data.files;
+  postState.value.postId = postState.value.post.postId;
+  postState.value.post.removeFiles = [];
+  postState.value.post.postPassword = "";
+
+  postState.value.filesInput.length = filesLength.value;
 }
 
 const modifyPost = async () => {
   try {
-    const validation = modifyValid(postState.post, postState.password);
+    const validation = modifyValid(postState.value.post);
     if (!validation) return;
 
     const formData = new FormData(modifyForm.value);
 
-    formData.append("postId", postState.postId);
+    formData.append("postId", postState.value.postId);
 
-    postState.removeFiles.forEach(item => {
+    postState.value.post.removeFiles.forEach(item => {
       formData.append("removeFiles", item);
     });
 
-    const response = await instance.put("/modify", formData);
-
-    alert(response.data.message);
-
-    sessionStorage.setItem("postId", String(postState.postId));
+    await boardService.modifyPost(formData);
 
     await router.push({name: "View", query: route.query});
 
   } catch (error) {
-
   }
 }
 
 const fileRemove = (fileId) => {
-  if (confirm("삭제?")) {
+  if (confirm("해당 파일을 삭제하시겠습니까?")) {
     updateFileState(fileId);
-    alert("삭제완료");
+    alert("파일이 삭제되었습니다.");
   }
 };
 
 const updateFileState = (fileId) => {
-  postState.postFiles = postState.postFiles.filter(file => file.fileId !== fileId);
-  postState.removeFiles.push(fileId);
-  postState.filesInput.length += 1;
+  postState.value.postFiles = postState.value.postFiles.filter(file => file.fileId !== fileId);
+  postState.value.post.removeFiles.push(fileId);
+  postState.value.filesInput.length += 1;
 }
 
 const goToPost = () => {
-  sessionStorage.setItem("postId", String(postState.postId));
-
-  router.push({name: "View", query: route.query});
+  boardService.goToPost(router, route, postState.value.post.postId)
 };
 </script>

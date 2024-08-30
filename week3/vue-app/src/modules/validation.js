@@ -33,8 +33,8 @@ const validate = (post) => {
     return true;
 }
 
-export const modifyValid = (post, password) => {
-    if (!isPasswordValid(password)) {
+export const modifyValid = (post) => {
+    if (!isPasswordValid(post.postPassword)) {
         alert("비밀번호는 4자 이상 16자 미만이며, 문자, 숫자, 특수문자를 포함해야 합니다.");
         return false;
     }

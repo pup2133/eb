@@ -4,14 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 /**
  * 페이징 데이터를 담을 VO
  */
 @Getter
 @Builder
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class Page {

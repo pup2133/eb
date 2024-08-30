@@ -55,16 +55,16 @@
 </template>
 
 <script setup>
-import {instance} from '@/modules/axios';
 import {writeValid} from '@/modules/validation'
 import {useRoute, useRouter} from 'vue-router';
-import {ref, reactive, onMounted} from 'vue';
+import {ref, onMounted} from 'vue';
+import boardService from "@/service/boardService";
 
 const router = useRouter();
 const route = useRoute();
 
 const writeForm = ref();
-const postFormState = reactive({
+const postFormState = ref({
   categoryId: "",
   postWriter: "",
   postPassword: "",
@@ -80,31 +80,22 @@ onMounted(() => {
 
 const getData = async () => {
   try {
-    const response = await instance.get("/write");
-
-    postFormState.categories = response.data;
+    const response = await boardService.getCategories();
+    postFormState.value.categories = response.data;
   } catch (error) {
-
   }
 };
 
 const savePost = async () => {
   try {
-    if (!writeValid(postFormState)) return;
-
-    const formData = new FormData(writeForm.value);
-
-    const response = await instance.post("/write", formData);
-
-    alert(response.data.message);
-
+    if (!writeValid(postFormState.value)) return;
+    await boardService.savePost(writeForm);
     await router.push({name: "List", query: {}});
-  } catch (error) {
-
+  }catch (error){
   }
 };
 
 const goToList = () => {
-  router.push({name: "List", query: route.query});
+  boardService.goToList(router, route);
 };
 </script>
