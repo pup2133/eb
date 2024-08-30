@@ -132,6 +132,7 @@ const pageNumbers = computed(() => {
  */
 const getPostList = async (searchStatus, page) => {
   try {
+    if(searchStatus) page = 1;
     const response = await boardService.getPostList(page, search);
     ListDataSetup(response.data.object);
     await router.replace({name: "List", query: search.value});
