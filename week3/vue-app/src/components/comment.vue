@@ -39,9 +39,9 @@ const props = defineProps({
 const saveComment = async () => {
   try {
     const comment = {
-      commentWriter: props.postState.post.commentWriter,
-      commentContent: props.postState.post.commentContent,
-      postId: props.postState.post.view.postId
+      commentWriter: props.postState.commentWriter,
+      commentContent: props.postState.commentContent,
+      postId: props.postState.view.postId
     };
 
     const response = await boardService.saveComment(comment);

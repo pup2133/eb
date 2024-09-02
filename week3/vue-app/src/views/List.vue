@@ -46,7 +46,7 @@
         <ul class="pagination">
           <!-- 이전 페이지 버튼 -->
           <li :class="{'disabled': pageInfo.startPage <= 1}">
-            <button type="button" v-if="pageInfo.startPage > 1" @click="getPostList(pageInfo.prevRange)">&laquo;</button>
+            <button type="button" v-if="pageInfo.startPage > 1" @click="getPostList(false, pageInfo.prevRange)">&laquo;</button>
           </li>
 
           <!-- 페이지 번호 -->
@@ -56,7 +56,7 @@
 
           <!-- 다음 페이지 버튼 -->
           <li :class="{'disabled': pageInfo.endPage >= pageInfo.totalPages}">
-            <button type="button" v-if="pageInfo.endPage < pageInfo.totalPages" @click="getPostList(pageInfo.nextRange)">&raquo;
+            <button type="button" v-if="pageInfo.endPage < pageInfo.totalPages" @click="getPostList(false, pageInfo.nextRange)">&raquo;
             </button>
           </li>
         </ul>
